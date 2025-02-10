@@ -1,0 +1,15 @@
+
+// MongoDB Routes
+const collections = ['user', 'dairy', 'drinks', 'foods', 'vegetarian', 'product', 'login'];
+collections.forEach(col => {
+    app.get(`/${col}`, (req, res) => {
+        mongodb.connect(MongoPath)
+            .then(object => {
+                const database = object.db('e-com');
+                database.collection(col).find().toArray()
+                    .then(document => res.send(document))
+                    .catch(err => res.status(500).json({ error: 'Failed to retrieve data' }));
+            })
+            .catch(err => res.status(500).json({ error: 'Failed to connect to MongoDB' }));
+    });
+});
