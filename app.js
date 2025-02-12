@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const mongodb = require('mongodb').MongoClient;
 const mysql = require("mysql");
 const multer = require("multer");
 const fs = require("fs");
@@ -7,12 +8,62 @@ const path = require("path");
 require("dotenv").config();
 
 const app = express();
+const conString = process.env.MongoUrl;
 const Port = process.env.PORT || 4000;
 
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use("/images", express.static(path.join(__dirname, "images")));
+
+// MongoDB Routes
+
+app.post('/user', (req, res) => {
+    mongodb.connect(conString).then((object) => {
+        const user = {
+            userid: req.body.userid,
+            img: req.body.img,
+            title: req.body.title,
+            price: req.body.price,
+            descri: req.body.descri,
+            que: req.body.que
+            
+        }
+        const database = object.db('decent');
+        database.collection('user').insertOne(user).then(document => {
+            res.send('Add Product Record One...');
+            res.end();
+        });
+    });
+});
+
+app.post('/register', (req, res) => {
+    mongodb.connect(conString).then((object) => {
+        const user = {
+            userid: req.body.userid,
+            mobile: req.body.mobile,
+            age : req.body.age,
+            email: req.body.email,
+            password: req.body.password,
+          
+        }
+        const database = object.db('decent');
+        database.collection('login').insertOne(user).then(document => {
+            res.send(document);
+            res.end();
+        })
+    })
+})
+
+app.get('/login', (req, res) => {
+    mongodb.connect(conString).then((object) => {
+        const database = object.db('decent');
+        database.collection('login').find().toArray().then((document) => {
+            res.send(document);
+            res.end();
+        });
+    });
+});
 
 // MySQL Connection
 const db = mysql.createConnection({
